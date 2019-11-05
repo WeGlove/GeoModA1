@@ -1,17 +1,12 @@
-n = 20;
-X = (rand(n,1)+1)*1;
-Y = (rand(n,1)+1)*1;
-k=500;
-delay = 0;
+X = [0 0 1 1];
+Y = [1 0 0 1];
+n = 4;
+k=20;
 %TODO How to get arbitrary X and Y
 
-hold on;
-
-show(X,Y,n,k,delay);
-
 function [] = show(X, Y, verticies, amount, delay)
-    for i = 1:amount
-        pause(delay);
+    for i = 1:k
+        pause(0.5);
         [X, Y] = iterate(X,Y,verticies);
         plotThis(X,Y);  
     end
