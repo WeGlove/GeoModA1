@@ -1,19 +1,25 @@
-n = 20;
-X = (rand(n,1)+1)*100;
-Y = (rand(n,1)+1)*100;
-k=500;
-delay = 0.5;
+n = 20; % Number of vericies
+k= 500; % Number of iterations
+delay = 0.1; % Delay in showing new plots 
 
 clf("reset")
 hold on;
 
-show(X,Y,n,k,delay);
+[X,Y] = getRandomGon(n);
+
+show(X, Y, n, k, delay, @shift);
+
+%Generates a new random polygon
+function [X,Y] = getRandomGon(n)
+    X = (rand(n,1)+1)*100;
+    Y = (rand(n,1)+1)*100;
+end
 
 %Plots multiple iterations of X and Y
-function [] = show(X, Y, verticies, amount, delay)
+function [] = show(X, Y, verticies, amount, delay, fun)
     for i = 1:amount
         pause(delay);
-        [X, Y] = shift(X,Y,verticies);
+        [X, Y] = fun(X,Y,verticies);
         plotThis(X,Y);  
     end
 end
@@ -51,8 +57,11 @@ function [X,Y] = shift(XIn, YIn,n)
         Y(i) = Y(i) - meanY;
     end
     
+    normX = norm(X);
+    normY = norm(Y);
+    
     for i = 1:n
-        X(i) = X(i) / norm(X);
-        Y(i) = Y(i) / norm(Y);
+        X(i) = X(i) / normX;
+        Y(i) = Y(i) / normY;
     end
 end
