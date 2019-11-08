@@ -1,6 +1,6 @@
-n = 20; % Number of vericies
-k= 500; % Number of iterations
-delay = 0.1; % Delay in showing new plots 
+n = 90; % Number of vericies
+k= 2000; % Number of iterations
+delay = 0; % Delay in showing new plots 
 
 clf("reset")
 hold on;
