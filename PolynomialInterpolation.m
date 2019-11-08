@@ -15,6 +15,8 @@ global Y;
 Y = power_fun(X);
 global base;
 base = get_vandermonde(X,Y);
+global approx;
+approx = solve_approx(approx_matrix(X,3),Y);
 
 
 %Plot the function
@@ -22,16 +24,38 @@ fplot(@power_fun, [-3,3]);
 
 %Plot the markers
 
-plotMarkers(X,Y);
+%plotMarkers(X,Y);
 
 %Plot Lagrange
 
-fplot(@lagrange, [-2,2])
+%fplot(@lagrange, [-2,2])
 
-%Plot everything else
+%Plot power base
 
-fplot(@power_base, [-2,2]);
+%fplot(@power_base, [-2,2]);
 
+% plot approximation
+
+fplot(@approximate, [-2,2]);
+
+function [M] = approx_matrix(X, degree)
+    M = zeros(0);
+    for d = 0: (degree-1)
+        M = [M X.^d];
+    end
+end
+
+function [out] = solve_approx(M, Y)
+    out = M'*M\(M'*Y);
+end
+
+function [L] = approximate(X)
+    global approx;
+    L = zeros(length(X),1);
+    for i = 1: length(approx)
+        L = L + approx(i) .* (X.^(i-1));
+    end
+end
 
 function [L] = power_base(X)
     global base;
@@ -70,21 +94,20 @@ function [out] = lagrange(x)
     end
 end
 
+%
 function [y] = power_fun(x)
     global a;
     global m;
     y = a.*(x.^m);
 end
 
+%Samples n random values in [start,stop]
 function [out] = sample(n, start, stop)
     out = rand(n,1)*(stop-start) + start;
     out = sort(out);
 end
 
-function [] = plotThis(X,Y)
-    plot(X,Y);
-end
-
+%Marks Points on the Plot with 'o'
 function [] = plotMarkers(X,Y)
     plot(X,Y,'o');
 end
