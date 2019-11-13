@@ -1,5 +1,5 @@
 n = 25;
-[x,y] = createPolygon(n, true); %True = without intersections
+[x,y] = createPolygon(n, false); %True = without intersections
 % choose fun for Matrix :
 % a) Ex1a = @fun_ex1a 
 % b) Ex1b = @fun_ex1b
