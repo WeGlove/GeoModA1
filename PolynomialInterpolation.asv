@@ -23,7 +23,11 @@ approx = solve_approx(approx_matrix(X,3),Y);
 fplot(@power_fun, [-3,3]);
 
 %Plot the markers
-plotMarkers(X,Y);
+global randDistr;
+randDistr = 
+
+
+%plotMarkers(X,Y);
 
 %Plot Lagrange
 
