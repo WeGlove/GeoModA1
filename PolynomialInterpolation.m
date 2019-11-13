@@ -18,24 +18,28 @@ base = get_vandermonde(X,Y);
 global approx;
 approx = solve_approx(approx_matrix(X,3),Y);
 
-
-%Plot the function
-fplot(@power_fun, [-3,3]);
-
 %Plot the markers
 plotMarkers(X,Y);
 
-%Plot Lagrange
+%======== 2a =========
+%Plot the function
+fplot(@power_fun, [-3,3]);
 
+%======== 2b =========
+%Plot Lagrange
 %fplot(@lagrange, [-2,2])
+
+%======== 2c =========
 
 %Plot power base
 
 %fplot(@power_base, [-2,2]);
 
+%======== 3 =========
+
 % plot approximation
 
-fplot(@approximate, [-2,2]);
+%fplot(@approximate, [-2,2]);
 
 function [M] = approx_matrix(X, degree)
     M = zeros(0);
