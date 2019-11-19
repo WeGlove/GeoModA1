@@ -1,11 +1,11 @@
-n = 25;
+n = 20;
 [x,y] = createPolygon(n, false); %True = without intersections
 % choose fun for Matrix :
 % a) Ex1a = @fun_ex1a 
 % b) Ex1b = @fun_ex1b
 % c) Ex1a = @fun_ex1a2 or Ex1b = @fun_ex1b2
-fun = @fun_ex1a2; 
-amount = 500;
+fun = @fun_ex1b; 
+amount = 200;
 delay = 0.1;
 clf("reset")
 hold on;
@@ -56,6 +56,7 @@ end
 %Matrix for c_1a)
 function [A] = subfun_ex1a2(n)
 A = sparse(0.5 * (eye(n)+circshift(eye(n),[-1 0])));
+disp(A);
 end
 
 %shift and normalize c_1b)

@@ -1,4 +1,4 @@
-clf("reset")
+ clf("reset")
 hold on;
 
 start = -2;
@@ -23,23 +23,25 @@ plotMarkers(X,Y);
 
 %======== 2a =========
 %Plot the function
-fplot(@power_fun, [-3,3]);
+fplot(@power_fun, [-3,3],'y');
 
 %======== 2b =========
 %Plot Lagrange
-%fplot(@lagrange, [-2,2])
+%fplot(@lagrange, [-2,2], 'b')
+
 
 %======== 2c =========
 
 %Plot power base
 
-%fplot(@power_base, [-2,2]);
+%fplot(@power_base, [-2,2], 'r');
+%axis([-3 3 -30 30])
 
 %======== 3 =========
 
 % plot approximation
 
-%fplot(@approximate, [-2,2]);
+fplot(@approximate, [-2,2]);
 
 function [M] = approx_matrix(X, degree)
     M = zeros(0);
