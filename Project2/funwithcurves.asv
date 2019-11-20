@@ -320,30 +320,7 @@ if myhandles.checked % if the checkbox is checked show the intermediate steps
  
  %%============================your code==================================== 
  %%Your code for drawing the intermediate decasteljau steps (4.1.b) can be put here   
-    
-    X = myhandles.controlPts(:,1);
-    Y = myhandles.controlPts(:,2);
-    
-    savepoints = myhandles.controlPts;
-    myt = myhandles.t;
  
-    %draw initial points before first iteration
-    drawIterPointsAndLines(X,Y, false);
-    
-    %draw iteration steps
-    npoints = size(X,1);
-    
-    for i =1:npoints
-        numnewp = npoints-i;
-        itpoints = zeros(numnewp-i, 2);  %save the points for each iteration
-        for l = 1:(numnewp)
-            itpoints(l,1) = convexCombination(savepoints(l,1),savepoints(l+1,1),myt);
-            itpoints(l,2) = convexCombination(savepoints(l,2),savepoints(l+1,2),myt);
-        end
-        drawIterPointsAndLines(itpoints(:,1),itpoints(:,2), true);
-        
-        savepoints = itpoints;
-    end
  
  %%=========================================================================
 end
@@ -353,35 +330,12 @@ end
 %update the handles data
 guidata(gcbo,myhandles) 
 
-
-
-%Draws the given points and lines between them
-%The points have to be in the correct oder
-%bool b: change point style: true = no dots    
-function drawIterPointsAndLines(X,Y,b)
-   plot(X,Y);
-   if(b)
-       scatter(X,Y, 'x');
-   else
-       scatter(X,Y, 'filled');
-   end
-   
-
  
 
 %%
 function mycurve= my_nice_function(controlPts,tsampling)
-    numsamples = numel(tsampling);
-    step = 1/numsamples;
-    
-    mycurve = zeros(numsamples,2);
-    for k = 0:step:1
-        p = deCasteljau(controlPts,k);
-        mycurve(round(k*numsamples+1),1) = p(1);
-        mycurve(round(k*numsamples+1),2) = p(2);
-    end
-    disp(mycurve);
-
+    num = nume(c
+end
 
 
 function [p] = deCasteljau(controlPts,t)
@@ -389,7 +343,7 @@ function [p] = deCasteljau(controlPts,t)
     Y = controlPts(:,2);
     
     npoints = size(X,1);
-    savepoints = controlPts;
+    savepoints = points;
     
     p = zeros(2,1);
     
@@ -409,11 +363,11 @@ function [p] = deCasteljau(controlPts,t)
         
         savepoints = itpoints;
     end
-
+end
 
 %convex combination of control points
 function [mean] = convexCombination(a1, a2, t)
     mean = (1-t)*a1 + t * a2;
-
+end
 %define your function here for 4.1 a
  %%============================your code==================================== 
