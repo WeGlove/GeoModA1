@@ -1,3 +1,4 @@
+clf('reset');
 hold on;
 
 %Input points
@@ -49,7 +50,7 @@ function [] = visualizeCasteljau(X,Y,t)
     global points;
     
     %draw initial points before first iteration
-    drawIterPointsAndLines(X,Y);
+    drawIterPointsAndLines(X,Y, false);
     
     %draw iteration steps
     npoints = size(X,1);
@@ -62,7 +63,7 @@ function [] = visualizeCasteljau(X,Y,t)
             itpoints(l,1) = convexCombination(savepoints(l,1),savepoints(l+1,1),t);
             itpoints(l,2) = convexCombination(savepoints(l,2),savepoints(l+1,2),t);
         end
-        drawIterPointsAndLines(itpoints(:,1),itpoints(:,2));
+        drawIterPointsAndLines(itpoints(:,1),itpoints(:,2), true);
         
         savepoints = itpoints;
     end
@@ -113,9 +114,15 @@ end
 
 %Draws the given points and lines between them
 %The points have to be in the correct oder
-function drawIterPointsAndLines(X,Y)
+%bool b: change point style: true = no dots    
+function drawIterPointsAndLines(X,Y,b)
    plot(X,Y);
-   scatter(X,Y, 'filled');
+   if(b)
+       scatter(X,Y, 'x');
+   else
+       scatter(X,Y, 'filled');
+   end
+   
 end
 
 %redefines the axis limits to display the graph better
