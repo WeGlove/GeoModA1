@@ -319,9 +319,15 @@ end
 if myhandles.checked % if the checkbox is checked show the intermediate steps
  
  %%============================your code==================================== 
- %%Your code for drawing the intermediate decasteljau steps (4.1.b) can be put here   
- 
- 
+ %%Your code for drawing the intermediate decasteljau steps (4.1.b) can be put here  
+     if ncp > 2
+        points = myhandles.controlPts;
+        for i = 1:(length(myhandles.controlPts)-1)
+            points = de_casteljau(points, myhandles.t);
+            plot(points(:,1),points(:,2),'o');
+            line(points(:,1),points(:,2))
+        end
+     end
  %%=========================================================================
 end
 
@@ -333,41 +339,21 @@ guidata(gcbo,myhandles)
  
 
 %%
-function mycurve= my_nice_function(controlPts,tsampling)
-    num = nume(c
-end
-
-
-function [p] = deCasteljau(controlPts,t)
-    X = controlPts(:,1);
-    Y = controlPts(:,2);
-    
-    npoints = size(X,1);
-    savepoints = points;
-    
-    p = zeros(2,1);
-    
-    for i =1:(npoints-1)
-        numnewp = npoints-i;
-        itpoints = zeros(numnewp-i, 2);  %save the points for each iteration
-        for l = 1:(numnewp)
-            itpoints(l,1) = convexCombination(savepoints(l,1),savepoints(l+1,1),t);
-            itpoints(l,2) = convexCombination(savepoints(l,2),savepoints(l+1,2),t);
-        end
-        
-        %finished? then return last the determined point
-        if(i == npoints-1)
-          p(1) = itpoints(1);
-          p(2) = itpoints(2);
-        end
-        
-        savepoints = itpoints;
-    end
-end
-
-%convex combination of control points
-function [mean] = convexCombination(a1, a2, t)
-    mean = (1-t)*a1 + t * a2;
-end
+function mycurve = my_nice_function(controlPts,tsampling)
 %define your function here for 4.1 a
  %%============================your code==================================== 
+    mycurve = [];
+    for j = 1:length(tsampling)
+        points = controlPts;
+        for i = 1:(length(controlPts)-1)
+            points = de_casteljau(points, tsampling(j));
+        end
+        mycurve = [mycurve; points];
+    end
+     
+ function intermediates = de_casteljau(points, t)
+     intermediates = zeros(length(points)-1,2);
+     for i = 1:(length(points)-1)
+        intermediates(i,1) = points(i,1) .* (1-t) + points(i+1,1) .* (t);
+        intermediates(i,2) = points(i,2) .* (1-t) + points(i+1,2) .* (t);
+     end

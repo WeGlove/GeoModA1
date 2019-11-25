@@ -15,11 +15,11 @@ detail = 100;
 
 
 %draw Bezier Curve
-%plotBezierCurve();
+plotBezierCurve();
 
 
 %visualize deCasteljau
-visualizeCasteljau(points(:,1), points(:,2), t);
+%visualizeCasteljau(points(:,1), points(:,2), t);
 
 
 
