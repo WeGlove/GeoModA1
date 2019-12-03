@@ -1,6 +1,7 @@
 global points;
-points = [9 9;9 3;0 9;2 0];
-points = [0 0;9 9;0 9;9 0];
+points = [9 9;9 3; 0 9;2 0];
+%points = [0 0;9 9;0 9; 9 0];
+%points = [0 5;4 5;6 8;7 5];
 global plot_progress;
 plot_progress = 0;
 clf('reset');
@@ -12,8 +13,6 @@ gradient =0.5;
 curve = bezier(0:0.01:1);
 ha = plot(curve(:,1), curve(:,2),  '.-', 'LineWidth',10, 'DisplayName',' 0.5');
 plot_progress = 1;
-bezier([0.2]);
-
 
 curvVector = get_all_curvature(0:0.01:1);
 cd = uint8(interpolate(curvVector)');
@@ -29,9 +28,8 @@ function colors = interpolate(vector)
     for i = 1:length(vector)
         if 0 <= vector(i) &&  vector(i) < gradient
             reverse  = 255*(gradient-vector(i))/gradient;
-            display(255*vector(i)/gradient);
             colors = [colors; 255*vector(i)/gradient+reverse reverse reverse 1];
-        elseif vector(i) > gradient
+       elseif vector(i) > gradient
             colors = [colors; 255 0 0 1];
         elseif -gradient < vector(i) && vector(i) < 0
             reverse  = 255*(gradient+vector(i))/gradient;

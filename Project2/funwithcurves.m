@@ -13,13 +13,14 @@ myhandles.tsampling=linspace(0,1,250)';% number of parameter values used for dra
 myhandles.controlPts=zeros(0,2);
 myhandles.control_polygon=0;
 myhandles.curve=0;
+myhandles.interpo=0;
 myhandles.dragStyle=0;
 myhandles.dragedControPoint=0;
 myhandles.axis=0;
 myhandles.checked=0;
 myhandles.t=1/2; %for intermediate deCasteljau
 
-
+global hInterData = [];
 %% design a basic  interface
 % seup axis with a grid layout for drawing 
 hax = gca; %get handle of current axes
@@ -232,6 +233,9 @@ myhandles = guidata(gcbo);
 
 myhandles.dragStyle=0;
 myhandles.dragedControPoint=0;
+
+updatePlot;
+
 guidata(gcbo,myhandles) 
 
 

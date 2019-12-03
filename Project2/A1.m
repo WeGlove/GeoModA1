@@ -320,7 +320,7 @@ if myhandles.checked % if the checkbox is checked show the intermediate steps
  
  %%============================your code==================================== 
  %%Your code for drawing the intermediate decasteljau steps (4.1.b) can be put here  
-     if ncp > 2
+     if ncp > 1
         points = myhandles.controlPts;
         for i = 1:(length(myhandles.controlPts)-1)
             points = de_casteljau(points, myhandles.t);
