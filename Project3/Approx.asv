@@ -1,0 +1,17 @@
+%content = get_data("SineRandom.txt");
+%content = iterate(content);
+
+%content = get_data("CamelHeadSilhouette.txt");
+content = get_data("MaxPlanckSilhouette.txt");
+
+plot(content(:,1),content(:,2))
+
+function content = get_data(file_name)
+    fileID = fopen(file_name,'r'); 
+    formatSpec = '%f'; %Specifies Data Type f == Float
+    content = fscanf(fileID, formatSpec);
+end
+
+function outout = format(vector)
+    for i = 1:length
+end
