@@ -1,11 +1,11 @@
 curvy_factor = 3;
 factor = 1;
 preserve_endPoints = true;
-co_err = 0.00009;
+co_err = 0.001;
 amount = 30;
 
-%content = get_data("SineRandom.txt");
-content = get_data("CamelHeadSilhouette.txt");
+content = get_data("SineRandom.txt");
+%content = get_data("CamelHeadSilhouette.txt");
 %content = get_data("MaxPlanckSilhouette.txt");
 
 clf('reset');
@@ -24,7 +24,7 @@ if preserve_endPoints
     content = [first; content; last];
 end
 points = getCtrlPts(content, curvy_factor);
-%plot(points(:,1),points(:,2),'Color', 'r');
+plot(points(:,1),points(:,2),'Color', 'r');
 draw_curves(points, 'g', 2);
 
 %SAMPLING
@@ -123,6 +123,7 @@ function intermediates = de_casteljau(points,t)
         intermediates(i,2) = points(i,2) .* (1-t) + points(i+1,2) .* (t);
      end
 end
+
 
 function ctrlPts = getCtrlPts(intersections, curvy_factor)
     ctrlPts = [];
