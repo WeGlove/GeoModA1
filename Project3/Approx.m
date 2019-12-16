@@ -1,21 +1,45 @@
 curvy_factor = 3;
-factor = 12;
+factor = 2;
 
-content = get_data("SineRandom.txt");
+%content = get_data("SineRandom.txt");
 %content = get_data("CamelHeadSilhouette.txt");
-%content = get_data("MaxPlanckSilhouette.txt");
+content = get_data("MaxPlanckSilhouette.txt");
 
 clf('reset');
 hold on;
 
 plot(content(:,1),content(:,2), 'Color', 'b'); %Draw he original curve
 
-content = mva(content, factor);
+%content = mva(mva(mva(mva(content, factor), factor),factor),factor);
+content = mva2(content, 30, factor);
+
 points = getCtrlPts(content, curvy_factor);
-plot(points(:,1),points(:,2),'Color', 'r');
+%plot(points(:,1),points(:,2),'Color', 'r');
 draw_curves(points, 'g', 2);
 
 %SAMPLING
+
+function sample = naive(points, amount)
+    sample = [];
+    for i = 1 : amount
+        sample = [sample; points(i * length(points) / amount,:)];
+    end
+end
+
+function sample = mva2(points, amount, window)
+    sample = [];
+    for i = 0.5 : amount - 0.5
+        avg = 0;
+        if round(i * length(points) / amount + window) > length(points)
+            continue;
+        end
+        for j = 1 : window
+            avg = avg + points(round(i * length(points) / amount + j),:);
+        end
+        avg = avg / window;
+        sample = [sample; avg];
+    end
+end
 
 function sample = mva(points, factor)
     sample = [];
@@ -46,7 +70,7 @@ end
 function draw_curves(points, color, width)
     tsampling = 0:0.01:1;
     for i = 0 : (length(points)+4)/4 - 1 - 1
-        curve = bezier(points(i*4+1:i*4+4,:), tsampling, color, width);
+        curve = bezier(points(i*4+1:i*4+4,:), tsampling, 'r', 2);
         plot(curve(:,1),curve(:,2), 'Color', color, 'LineWidth', width);
     end
 end
@@ -55,8 +79,8 @@ function curve = bezier(points, tsampling, color, width)
     curve = [];
     for j = 1:length(tsampling)
         controlPts = points;
-        %plot(controlPts(:,1),controlPts(:,2),'x');
-        %line(controlPts(:,1),controlPts(:,2),'Color',color, 'LineWidth', width);
+        plot(controlPts(:,1),controlPts(:,2),'x');
+        line(controlPts(:,1),controlPts(:,2),'Color',color, 'LineWidth', width);
         for i = 1:(length(controlPts)-1)
             controlPts = de_casteljau(controlPts, tsampling(j));
         end
