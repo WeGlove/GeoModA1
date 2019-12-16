@@ -1,5 +1,5 @@
 %points = [9 9;9 3;0 9;2 0];
-points = [2 0; 0 9; 9 3; 9 9];
+points = [2 0; 0 9; 9 3; 9 9; 5 4; 3 2; 1 5];
 %points = [1 1; 3 1];
 global plot_progress; 
 plot_progress = 1;
