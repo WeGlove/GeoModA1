@@ -1,8 +1,5 @@
 curvy_factor = 3;
 factor = 1;
-preserve_endPoints = true;
-co_err = 0.00009;
-amount = 30;
 
 %content = get_data("SineRandom.txt");
 content = get_data("CamelHeadSilhouette.txt");
@@ -14,15 +11,13 @@ hold on;
 plot(content(:,1),content(:,2), 'Color', 'b'); %Draw he original curve
 
 %content = mva(mva(mva(mva(content, factor), factor),factor),factor);
-first = content(1,:);
-last = content(length(content),:);
+display(length(content));
+first = content(1)
+content = colinear(content, 0.0000001);
+display(length(content));
 
-content = colinear(content, co_err);
-content = mva2(content, amount, factor);
+content = mva2(content, 30, factor);
 
-if preserve_endPoints
-    content = [first; content; last];
-end
 points = getCtrlPts(content, curvy_factor);
 %plot(points(:,1),points(:,2),'Color', 'r');
 draw_curves(points, 'g', 2);
