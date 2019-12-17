@@ -2,10 +2,10 @@ curvy_factor = 3;
 factor = 1;
 preserve_endPoints = true;
 co_err = 0.001;
-amount = 30;
+amount = 50;
 
-content = get_data("SineRandom.txt");
-%content = get_data("CamelHeadSilhouette.txt");
+%content = get_data("SineRandom.txt");
+content = get_data("CamelHeadSilhouette.txt");
 %content = get_data("MaxPlanckSilhouette.txt");
 
 clf('reset');
@@ -31,13 +31,14 @@ draw_curves(points, 'g', 2);
 
 function sample = colinear(points,err)
     sample = [points(1,:)];
+    L = points(1,:);
     for i = 2 : length(points)-1
-        L = points(i-1,:);
         R = points(i+1,:);
         M = points(i,:);
         dist = distance(L,R,M);
         if dist > err
             sample = [sample; points(i,:)];
+            L = M;
         end
     end
     sample = [sample; points(length(points),:)];
