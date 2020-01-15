@@ -8,16 +8,10 @@ plot_mesh_collected(points,triangles)
 
 boundary_loops = get_boundary_loops(points,triangles);
 
-C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
-[points,triangles] = rearange_for_boundary(boundary_loops{1}, points, triangles);
+[points2,triangles2] = swap_points(1,2,points,triangles);
 
-% Rearanges the points such that the points corresponding to the
-% <boundary> loop are at the very bottom. Updates the triangles accordingly
-function [points, triangles] = rearange_for_boundary(boundary, points, triangles)
-    for index = 1: length(boundary)
-        [points,triangles] = swap_points(boundary(index), length(points)-length(boundary)+index, points, triangles);
-    end
-end
+get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
+
 
 % Swaps two points in points and updates the triangles accordingly
 function [points, triangles] = swap_points(id_first, id_second, points, triangles)
