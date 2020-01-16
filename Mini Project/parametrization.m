@@ -10,6 +10,101 @@ boundary_loops = get_boundary_loops(points,triangles);
 
 C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
 [points,triangles] = rearange_for_boundary(boundary_loops{1}, points, triangles);
+con_tri = get_connected_triangles(1,triangles);
+form_triangle_ring(con_tri, 1);
+
+function Ma = get_M_alpha(boundary, points, triangles)
+    Ma = sparse()
+end
+
+function get_M_alpha_column(point_index, triangles, points)
+    connected_triangles = get_connected_triangles(point_index, triangles, points);
+    for index = 1 : length(connected_triangles)
+        connected_triangles(:,index)
+    end
+end
+
+%Returns triangles in <triangles> connected to <point_index>
+function connected_triangles = get_connected_triangles(point_index, triangles)
+    connected_triangles = [];
+    for index = 1 : length(triangles)
+        if ismember(point_index, triangles(:,index))
+            connected_triangles = [connected_triangles triangles(:,index)];
+        end
+    end
+end
+
+% if <point_index> is in a triangle in <triangles> swaps position of
+% <point_index> with value at <position>
+function organized_triangles = organize_triangles(triangles, point_index, position)
+    organized_triangles = [];
+    for index = 1 : length(triangles)
+        triangle = triangles(:, index);
+        organized_triangles = [organized_triangles organize_triangle(triangle, point_index, position)];
+    end
+end
+
+% if <point_index> is in <triangle> swaps position of <point_index> with 
+% value at <position>
+function organized_triangle = organize_triangle(triangle, point_index, position)
+    if ismember(point_index, triangle)
+        point_tri_index = find(triangle == point_index);
+        triangle(point_tri_index) = triangle(position);
+        triangle(position) = point_index;
+        organized_triangle = triangle;
+    end
+end
+
+% Forms a organized Ring out of a triangle vector <triangles>
+% Requires the triangles to acutally form a ring
+% <prime_point_index> is the common middle point
+function ring = form_triangle_ring(triangles, prime_point_index)
+    triangles = organize_triangles(triangles, prime_point_index, 1);
+    ring = triangles(:,1);
+    unsorted = triangles(:,2:length(triangles));
+    while ~isempty(unsorted)
+        toSort = unsorted(:,1);
+        new_ring = sort_triangle_into_ring(ring, toSort);
+        if ~isempty(new_ring)
+            if length(new_ring) <= 1
+                unsorted = [];
+            else
+                unsorted = unsorted(:,2:length(unsorted(1,:)));
+            end
+            ring = new_ring;
+        else
+            unsorted = [unsorted(:,2:length(unsorted)) unsorted(:,1)];
+        end
+    end
+end
+
+%Sorts one common point first triangle <triangle> into a common point first triangle
+%ring <ring>. The second index will be the one connecting left and the
+%thrid the one connecting right
+function ring = sort_triangle_into_ring(ring, triangle)
+    left = ring(:,1);
+    right = ring(:,length(ring(1,:)));
+    if ismember(triangle(2),left)
+        ring = [organize_triangle(triangle, triangle(2), 3) ring];
+    elseif ismember(triangle(3),left)
+        ring = [organize_triangle(triangle, triangle(3), 3) ring];
+    elseif ismember(triangle(2),right)
+        ring = [ring organize_triangle(triangle, triangle(2), 2)];
+    elseif ismember(triangle(3),left)
+        ring = [ring organize_triangle(triangle, triangle(3), 2)];
+    else
+        ring = [];
+    end
+end
+
+% Returns the angle at <angle_point> between the vector spanned with
+% <second_point> and <third_point>
+% Formular used is inverse cosine on scalar product
+function angle = get_angle(angle_point, second_point, third_point)
+    from_second = norm(second_point - angle_point);
+    from_third = norm(third_point - angle_point);
+    angle = acos(dot(from_second, from_third));
+end
 
 % Rearanges the points such that the points corresponding to the
 % <boundary> loop are at the very bottom. Updates the triangles accordingly
