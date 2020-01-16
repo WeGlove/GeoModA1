@@ -10,8 +10,7 @@ boundary_loops = get_boundary_loops(points,triangles);
 
 C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
 [points,triangles] = rearange_for_boundary(boundary_loops{1}, points, triangles);
-con_tri = get_connected_triangles(1,triangles);
-form_triangle_ring(con_tri, 1);
+form_triangle_rings(points,triangles);
 
 function Ma = get_M_alpha(boundary, points, triangles)
     Ma = sparse()
@@ -38,7 +37,7 @@ end
 % <point_index> with value at <position>
 function organized_triangles = organize_triangles(triangles, point_index, position)
     organized_triangles = [];
-    for index = 1 : length(triangles)
+    for index = 1 : length(triangles(1,:))
         triangle = triangles(:, index);
         organized_triangles = [organized_triangles organize_triangle(triangle, point_index, position)];
     end
@@ -55,13 +54,21 @@ function organized_triangle = organize_triangle(triangle, point_index, position)
     end
 end
 
+function rings = form_triangle_rings(points, triangles)
+    rings = [];
+    for i= 1:length(points)
+        connected_triangles = get_connected_triangles(i,triangles);
+        rings{i} = form_triangle_ring(connected_triangles, i);
+    end
+end
+
 % Forms a organized Ring out of a triangle vector <triangles>
 % Requires the triangles to acutally form a ring
 % <prime_point_index> is the common middle point
 function ring = form_triangle_ring(triangles, prime_point_index)
     triangles = organize_triangles(triangles, prime_point_index, 1);
     ring = triangles(:,1);
-    unsorted = triangles(:,2:length(triangles));
+    unsorted = triangles(:,2:length(triangles(1,:)));
     while ~isempty(unsorted)
         toSort = unsorted(:,1);
         new_ring = sort_triangle_into_ring(ring, toSort);
@@ -73,7 +80,7 @@ function ring = form_triangle_ring(triangles, prime_point_index)
             end
             ring = new_ring;
         else
-            unsorted = [unsorted(:,2:length(unsorted)) unsorted(:,1)];
+            unsorted = [unsorted(:,2:length(unsorted(1,:))) unsorted(:,1)];
         end
     end
 end
@@ -81,16 +88,40 @@ end
 %Sorts one common point first triangle <triangle> into a common point first triangle
 %ring <ring>. The second index will be the one connecting left and the
 %thrid the one connecting right
+%This code is really suboptimal, please fix
 function ring = sort_triangle_into_ring(ring, triangle)
     left = ring(:,1);
     right = ring(:,length(ring(1,:)));
+    
+    
+        
     if ismember(triangle(2),left)
+        if length(ring(1,:)) == 1
+            if left(3) == triangle(2)
+                ring = organize_triangle(left, left(3),2);
+            end
+        end
         ring = [organize_triangle(triangle, triangle(2), 3) ring];
     elseif ismember(triangle(3),left)
+        if length(ring(1,:)) == 1
+            if left(3) == triangle(3)
+                ring = organize_triangle(left, left(3), 2);
+            end
+        end
         ring = [organize_triangle(triangle, triangle(3), 3) ring];
     elseif ismember(triangle(2),right)
+        if length(ring(1,:)) == 1
+            if right(2) == triangle(2)
+                ring = organize_triangle(right, right(2),3);
+            end
+        end
         ring = [ring organize_triangle(triangle, triangle(2), 2)];
-    elseif ismember(triangle(3),left)
+    elseif ismember(triangle(3),right)
+        if length(ring(1,:)) == 1
+            if right(2) == triangle(3)
+                ring = organize_triangle(left, left(2),3);
+            end
+        end
         ring = [ring organize_triangle(triangle, triangle(3), 2)];
     else
         ring = [];
