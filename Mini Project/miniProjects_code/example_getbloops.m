@@ -2,7 +2,7 @@
 %% get the boundary loops of a given input mesh
 
 
-[p,t]=loadmesh('samplemeshes\pig.off');%windows
+[p,t]=loadmesh('samplemeshes\head.off');%windows
 %[p,t]=loadmesh('samplemeshes/pig.off');%mac
 
 %[p,t]=loadmesh('samplemeshes\hand.off');
