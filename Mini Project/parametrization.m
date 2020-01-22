@@ -8,11 +8,14 @@ plot_mesh_collected(points,triangles)
 
 boundary_loops = get_boundary_loops(points,triangles);
 
+[C,M] = get_linear_equation(boundary_loops, points, triangles);
+M = full(M);
+%linsolve(full(M),full(C))
 
 function [C,M] = get_linear_equation(boundary_loops, points, triangles)
     C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
     [points,triangles] = rearange_for_boundary(boundary_loops{1}, points, triangles);
-    M = get_M(boundary_loops{1}, points, triangles, 1, 1);
+    M = get_M(boundary_loops{1}, points, triangles, 1, 0);
 end
 
 function M = get_M(boundary, points, triangles, lambda, mu)
