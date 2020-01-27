@@ -1,16 +1,26 @@
 clear, close all;
 
-%[p,t]=loadmesh('samplemeshes/mushroom.off');%mac
+[points,triangles]=loadmesh('samplemeshes\hand.off');%windows
 
-[points,triangles]=loadmesh('samplemeshes\head.off');%windows
-
-plot_mesh_collected(points,triangles)
+%plot_mesh_collected(points,triangles)
 
 boundary_loops = get_boundary_loops(points,triangles);
 
 [C,M] = get_linear_equation(boundary_loops, points, triangles);
+%spy(M);
 M = full(M);
-%linsolve(full(M),full(C))
+
+U = linsolve(M,full(C));
+out = to_mesh(U);
+plot_mesh_collected(out',triangles)
+
+function points = to_mesh(points)
+    new = zeros(length(points),3);
+    for i = 1 : length(points)
+        new(i,:) = [points(i,:) 0];
+    end
+    points = new;
+end
 
 function [C,M] = get_linear_equation(boundary_loops, points, triangles)
     C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
@@ -23,10 +33,13 @@ function M = get_M(boundary, points, triangles, lambda, mu)
     M_alpha = get_M_alpha(rings, boundary, points);
     M_chi = get_M_chi(rings, boundary, points);
     M = M_alpha * lambda  + M_chi * mu; 
+    for i=1:length(boundary)
+        M(length(points)-length(boundary)+i,length(points)-length(boundary)+i) = 1;
+    end
 end
 
 function M_alpha = get_M_alpha(rings, boundary, points)
-    M_alpha = sparse(length(points),length(points)-length(boundary));
+    M_alpha = sparse(length(points),length(points));
     for index_column = 1 : length(points)
         ring = rings{index_column};
         accumulate = 0;
@@ -35,7 +48,12 @@ function M_alpha = get_M_alpha(rings, boundary, points)
         for index_ring = 1 : length(ring(1,:))
             middle_point_index = ring(2,index_ring);
             alpha_point_index = ring(3,index_ring);
-            beta_point_index = ring(2,mod(index_ring-1,length(ring))+1);
+            if index_ring == 1
+                a = length(ring(1,:));
+            else
+                a = a-1;
+            end
+            beta_point_index = ring(2,a);
             
             middle_point = points(:,middle_point_index);
             alpha_point = points(:,alpha_point_index);
@@ -44,7 +62,9 @@ function M_alpha = get_M_alpha(rings, boundary, points)
             alpha = get_angle(alpha_point, prime_point, middle_point);
             beta = get_angle(beta_point, prime_point, middle_point);
             value = cot(alpha) + cot(beta);
-            M_alpha(index_column, middle_point_index) = value;
+            if middle_point_index < length(points) - length(boundary)
+                M_alpha(middle_point_index, index_column) = value;
+            end
             accumulate = accumulate + value;
         end
         if index_column <= length(points)-length(boundary)
@@ -54,8 +74,8 @@ function M_alpha = get_M_alpha(rings, boundary, points)
 end
 
 function M_chi = get_M_chi(rings, boundary, points)
-    M_chi = sparse(length(points),length(points)-length(boundary));
-    for index_column = 1 : length(points)
+    M_chi = sparse(length(points),length(points));
+    for index_column = 1 : length(points)-length(boundary)
         ring = rings{index_column};
         accumulate = 0;
         prime_point = points(:, index_column);
@@ -63,7 +83,12 @@ function M_chi = get_M_chi(rings, boundary, points)
         for index_ring = 1 : length(ring(1,:))
             middle_point_index = ring(2,index_ring);
             alpha_point_index = ring(3,index_ring);
-            beta_point_index = ring(2,mod(index_ring-1,length(ring))+1);
+            if index_ring == 1
+                a = length(ring(1,:));
+            else
+                a = a-1;
+            end
+            beta_point_index = ring(2,a);
             
             middle_point = points(:,middle_point_index);
             alpha_point = points(:,alpha_point_index);
@@ -72,7 +97,7 @@ function M_chi = get_M_chi(rings, boundary, points)
             gamma = get_angle(middle_point, prime_point, beta_point);
             delta = get_angle(middle_point, prime_point, alpha_point);
             value = (cot(gamma) + cot(delta)) / (norm(prime_point-middle_point)^2);
-            M_chi(index_column, middle_point_index) = value;
+            M_chi(middle_point_index,index_column) = value;
             accumulate = accumulate + value;
         end
         if index_column <= length(points)-length(boundary)
@@ -81,15 +106,28 @@ function M_chi = get_M_chi(rings, boundary, points)
     end
 end
 
+%Returns a sparse matrix representation of <triangles>
+function matrix = get_sparse_triangle_matrix(points, triangles)
+    matrix = sparse(length(points),length(triangles));
+    for triangle_index = 1 : length(triangles)
+        matrix(triangles(1,triangle_index), triangle_index) = 1;
+        matrix(triangles(2,triangle_index), triangle_index) = 1;
+        matrix(triangles(3,triangle_index), triangle_index) = 1;
+    end
+end
 
-%Returns triangles in <triangles> connected to <point_index>
-function connected_triangles = get_connected_triangles(point_index, triangles)
+%Returns triangle indexes in <triangles_matrix> connected to <point_index>
+function connected_triangles = get_connected_triangles(point_index, triangle_matrix)
     connected_triangles = [];
-    for index = 1 : length(triangles)
-        if ismember(point_index, triangles(:,index))
-            connected_triangles = [connected_triangles triangles(:,index)];
+    searchVector = zeros(length(triangle_matrix(:,1)),1);
+    searchVector(point_index) = 1;
+    triangles = searchVector' * triangle_matrix;
+    for triangle_index = 1 : length(triangles)
+        if triangles(triangle_index) == 1
+            connected_triangles = [connected_triangles; triangle_index];
         end
     end
+    
 end
 
 % if <point_index> is in a triangle in <triangles> swaps position of
@@ -115,9 +153,14 @@ end
 
 function rings = form_triangle_rings(points, triangles)
     rings = [];
+    triangle_mat = get_sparse_triangle_matrix(points, triangles);
     for i= 1:length(points)
-        connected_triangles = get_connected_triangles(i,triangles);
-        rings{i} = form_triangle_ring(connected_triangles, i);
+        connected_triangles = get_connected_triangles(i,triangle_mat); 
+        explicit_triangles = zeros(length(connected_triangles),3);
+        for index = 1 : length(connected_triangles)
+            explicit_triangles(index,:) = triangles(:,connected_triangles(index));
+        end
+        rings{i} = form_triangle_ring(explicit_triangles', i);
     end
 end
 
