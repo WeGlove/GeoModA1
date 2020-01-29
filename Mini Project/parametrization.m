@@ -1,13 +1,13 @@
 clear, close all;
 
-[points,triangles]=loadmesh('samplemeshes\hand.off');%windows
+[points,triangles]=loadmesh('samplemeshes\head.off');%windows
 
-%plot_mesh_collected(points,triangles)
+plot_mesh_collected(points,triangles)
 
 boundary_loops = get_boundary_loops(points,triangles);
 
 [C,M] = get_linear_equation(boundary_loops, points, triangles);
-%spy(M);
+spy(M);
 M = full(M);
 
 U = linsolve(M,full(C));
@@ -31,6 +31,7 @@ end
 function M = get_M(boundary, points, triangles, lambda, mu)
     rings = form_triangle_rings(points,triangles);
     M_alpha = get_M_alpha(rings, boundary, points);
+    E = full(M_alpha);
     M_chi = get_M_chi(rings, boundary, points);
     M = M_alpha * lambda  + M_chi * mu; 
     for i=1:length(boundary)
@@ -42,6 +43,7 @@ function M_alpha = get_M_alpha(rings, boundary, points)
     M_alpha = sparse(length(points),length(points));
     for index_column = 1 : length(points)
         ring = rings{index_column};
+            
         accumulate = 0;
         prime_point = points(:, index_column);
         
@@ -51,7 +53,12 @@ function M_alpha = get_M_alpha(rings, boundary, points)
             if index_ring == 1
                 a = length(ring(1,:));
             else
-                a = a-1;
+                a = index_ring-1;
+            end
+            if index_ring == length(ring(1,:))
+                b = 1;
+            else
+                b = index_ring+1;
             end
             beta_point_index = ring(2,a);
             
@@ -61,7 +68,21 @@ function M_alpha = get_M_alpha(rings, boundary, points)
             
             alpha = get_angle(alpha_point, prime_point, middle_point);
             beta = get_angle(beta_point, prime_point, middle_point);
-            value = cot(alpha) + cot(beta);
+            
+            if ring(3,index_ring) ~= ring(2,b)
+                coa = 0;
+            else
+                coa = cot(alpha);
+            end
+            if ring(2,index_ring) ~= ring(3,a)
+                cob = 0;
+            else
+                cob = cot(beta);
+            end
+            value = coa + cob;
+            display(value);
+            if value ~= real(value)
+            end
             if middle_point_index < length(points) - length(boundary)
                 M_alpha(middle_point_index, index_column) = value;
             end
@@ -236,7 +257,7 @@ end
 function angle = get_angle(angle_point, second_point, third_point)
     from_second = norm(second_point - angle_point);
     from_third = norm(third_point - angle_point);
-    angle = acos(dot(from_second, from_third));
+    angle = acos((dot(from_second, from_third)-180)/180);
 end
 
 % Rearanges the points such that the points corresponding to the
