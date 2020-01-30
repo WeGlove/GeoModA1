@@ -37,7 +37,7 @@ set(gcf,'Color','w');
 
 if isempty(face_vertex_color)
     h1=patch('vertices',vertex,'faces',face,'facecolor',[face_color face_color face_color],...
-        'edgecolor',[edge_color edge_color edge_color],'edgealpha',0.3,'linestyle','none'); 
+        'edgecolor',[edge_color edge_color edge_color],'edgealpha',0.3); 
 else
     nverts = size(vertex,1);
     % vertex_color = rand(nverts,1);
