@@ -1,18 +1,29 @@
 clear, close all;
 
-[points,triangles]=loadmesh('samplemeshes\head.off');%windows
+[points,triangles]=loadmesh('samplemeshes\hand.off');%windows
 
-plot_mesh_collected(points,triangles)
+%plot_mesh_collected(points,triangles)
 
 boundary_loops = get_boundary_loops(points,triangles);
 
-[C,M] = get_linear_equation(boundary_loops, points, triangles);
+[C,M, arr] = get_linear_equation(boundary_loops, points, triangles);
 spy(M);
 M = full(M);
 
 U = linsolve(M,full(C));
 out = to_mesh(U);
-plot_mesh_collected(out',triangles)
+plot_mesh_collected(out',arr)
+to_off("yee.off", out, arr);
+
+
+function to_off(file_name,points, triangles)
+    fileID = fopen(file_name, 'w');
+    points = points';
+    fprintf(fileID, "OFF\n")
+    fprintf(fileID, "%d %d %d\n",[length(points), length(triangles), 0])
+    fprintf(fileID,'%f %f %f\n',points);
+    fprintf(fileID,'3 %d %d %d\n',triangles);
+end
 
 function points = to_mesh(points)
     new = zeros(length(points),3);
@@ -22,18 +33,19 @@ function points = to_mesh(points)
     points = new;
 end
 
-function [C,M] = get_linear_equation(boundary_loops, points, triangles)
-    C = get_boundary_conditions(@sample_unit_circle, boundary_loops{1}, points);
-    [points,triangles] = rearange_for_boundary(boundary_loops{1}, points, triangles);
-    M = get_M(boundary_loops{1}, points, triangles, 1, 0);
+function [C,M,arr_triangles] = get_linear_equation(boundary_loops, points, triangles)
+    loop = 1;
+    C = get_boundary_conditions(@sample_unit_circle, boundary_loops{loop}, points);
+    [points,triangles] = rearange_for_boundary(boundary_loops{loop}, points, triangles);
+    M = get_M(boundary_loops{loop}, points, triangles, 0.1,0.9);
+    arr_triangles = triangles;
 end
 
 function M = get_M(boundary, points, triangles, lambda, mu)
     rings = form_triangle_rings(points,triangles);
     M_alpha = get_M_alpha(rings, boundary, points);
-    E = full(M_alpha);
     M_chi = get_M_chi(rings, boundary, points);
-    M = M_alpha * lambda  + M_chi * mu; 
+    M = M_alpha * lambda + M_chi * mu; 
     for i=1:length(boundary)
         M(length(points)-length(boundary)+i,length(points)-length(boundary)+i) = 1;
     end
@@ -65,7 +77,8 @@ function M_alpha = get_M_alpha(rings, boundary, points)
             middle_point = points(:,middle_point_index);
             alpha_point = points(:,alpha_point_index);
             beta_point = points(:,beta_point_index);
-            
+            isRing = ring(2,1) == ring(3,length(ring(1,:)));
+            display(isRing);
             alpha = get_angle(alpha_point, prime_point, middle_point);
             beta = get_angle(beta_point, prime_point, middle_point);
             
@@ -80,9 +93,6 @@ function M_alpha = get_M_alpha(rings, boundary, points)
                 cob = cot(beta);
             end
             value = coa + cob;
-            display(value);
-            if value ~= real(value)
-            end
             if middle_point_index < length(points) - length(boundary)
                 M_alpha(middle_point_index, index_column) = value;
             end
@@ -109,6 +119,11 @@ function M_chi = get_M_chi(rings, boundary, points)
             else
                 a = a-1;
             end
+            if index_ring == length(ring(1,:))
+                b = 1;
+            else
+                b = index_ring+1;
+            end
             beta_point_index = ring(2,a);
             
             middle_point = points(:,middle_point_index);
@@ -117,8 +132,25 @@ function M_chi = get_M_chi(rings, boundary, points)
             
             gamma = get_angle(middle_point, prime_point, beta_point);
             delta = get_angle(middle_point, prime_point, alpha_point);
+            display(gamma);
+            display(delta);
+            h = norm(prime_point-middle_point)^2;
+            display(h);
             value = (cot(gamma) + cot(delta)) / (norm(prime_point-middle_point)^2);
-            M_chi(middle_point_index,index_column) = value;
+            if ring(3,index_ring) ~= ring(2,b)
+                cod = 0;
+            else
+                cod = cot(delta);
+            end
+            if ring(2,index_ring) ~= ring(3,a)
+                cog = 0;
+            else
+                cog = cot(gamma);
+            end
+            value = (cog + cod)  / (norm(prime_point-middle_point)^2);
+            if middle_point_index < length(points) - length(boundary)
+                M_chi(middle_point_index, index_column) = value;
+            end
             accumulate = accumulate + value;
         end
         if index_column <= length(points)-length(boundary)
@@ -255,9 +287,12 @@ end
 % <second_point> and <third_point>
 % Formular used is inverse cosine on scalar product
 function angle = get_angle(angle_point, second_point, third_point)
-    from_second = norm(second_point - angle_point);
-    from_third = norm(third_point - angle_point);
-    angle = acos((dot(from_second, from_third)-180)/180);
+    from_second = (second_point - angle_point);
+    from_second = from_second / sqrt(from_second(1)^2 + from_second(2)^2 + from_second(3)^2);
+    from_third = (third_point - angle_point);
+    from_third = from_third / sqrt(from_third(1)^2 + from_third(2)^2 + from_third(3)^2);
+    a = dot(from_second, from_third);
+    angle = acos(a);
 end
 
 % Rearanges the points such that the points corresponding to the
@@ -349,7 +384,11 @@ end
 %An even simpler plotting function than the one given
 function plot_mesh_collected(points, triangles)
     points=points'; %flip to colums for convenience in matrix multiplication
-
+    
+    %options = {};
+    %options.edge_color = [255,255, 255];
+    %options.face_vertex_color = [0,0,0];
+    %options.face_color = [0,0,0];
     figure, plotmesh(points,triangles');
     rzview('on') %allows for rotating zoom and move with the mouse (left-right-middle)
 
@@ -359,6 +398,6 @@ end
 function samples = sample_unit_circle(amount)
     samples = [];
     for i = 0 : amount-1
-        samples = [samples; cos(360/amount*i) sin(360/amount*i)];
+        samples = [samples; cos(2*pi /amount*i - pi) sin(2*pi /amount*i - pi)];
     end 
 end
