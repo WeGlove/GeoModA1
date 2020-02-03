@@ -1,6 +1,6 @@
 clear, close all;
 
-[points,triangles]=loadmesh('samplemeshes/head.off');%windows
+[points,triangles]=loadmesh('samplemeshes/hand.off');%windows
 
 normals = (get_normals(points, triangles) + 1)/2;
 %plot_mesh_collected(points,triangles,normals)
@@ -13,10 +13,10 @@ M = full(M);
 boundary_loops = get_boundary_loops(arr_points, arr_triangles);
 
 U = linsolve(M,full(C));
-c_col = get_chess_colors(0.5, U, arr_triangles) * 255;
+c_col = get_chess_colors(2, U, arr_triangles);
 out = to_mesh(U);
-%plot_mesh_collected(arr_points,arr_triangles, c_col')
-plot_mesh_collected(out',arr_triangles,c_col')
+plot_mesh_collected(out',arr_triangles, c_col' * 255)
+plot_mesh_collected(points,triangles,c_col)
 %to_off("yee.off", out, arr);
 
 function colors = get_chess_colors(mo, points, triangles)
@@ -26,8 +26,7 @@ function colors = get_chess_colors(mo, points, triangles)
         
         centroid = points(triangle_point(1),:) + points(triangle_point(2),:) + points(triangle_point(3),:);
         centroid = centroid / 3;
-        if (mod(centroid(1),mo)/mo < 0.5 && mod(centroid(2),mo)/mo < 0.5) || (mod(centroid(1),mo)/mo > 0.5 && mod(centroid(2),mo)/mo > 0.5)
-        %if mod(centroid(1) + centroid(2), mo)/mo < 0.5
+        if (mod(centroid(1),mo) < mo/2 && mod(centroid(2),mo) < mo/2) || (mod(centroid(1),mo) > mo/2 && mod(centroid(2),mo) > mo/2)
             colors = [colors; [0 0 0]];
         else
             colors = [colors; [1 1 1]];
@@ -70,7 +69,7 @@ function [C,M,arr_points,arr_triangles] = get_linear_equation(boundary_loops, po
     loop = 1;
     C = get_boundary_conditions(@sample_unit_circle, boundary_loops{loop}, points);
     [arr_points, arr_triangles] = rearange_for_boundary(boundary_loops{loop}, points, triangles);
-    M = get_M(boundary_loops{loop}, arr_points, arr_triangles, 0, 1);
+    M = get_M(boundary_loops{loop}, arr_points, arr_triangles, 1, 0);
 end
 
 function M = get_M(boundary, points, triangles, lambda, mu)
@@ -170,7 +169,6 @@ function M_chi = get_M_chi(rings, boundary, points)
             delta = get_angle(middle_point, prime_point, alpha_point);
             
             h = (prime_point(1) - middle_point(1))^2 + (prime_point(2) - middle_point(2))^2 + (prime_point(3) - middle_point(3))^2; 
-            
             if ring(3,index_ring) ~= ring(2,b)
                 cod = 0;
             else
@@ -181,7 +179,7 @@ function M_chi = get_M_chi(rings, boundary, points)
             else
                 cog = cot(gamma);
             end
-            value = (cog + cod)/h;
+            value = (cog + cod);
             M_chi(index_row, middle_point_index) = value;
             accumulate = accumulate + value;
         end
